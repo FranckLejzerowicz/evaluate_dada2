@@ -65,9 +65,9 @@ def get_fastqs(meta, trimmed_dir):
     fastqs = {}
     for sample_name in meta['sample_name']:
         fastqs[sample_name] = glob.glob(
-            '%s/%s*_R1_*.fastq.gz' % (trimmed_dir, sample_name)
+            '%s/%s_*_R1_*.fastq.gz' % (trimmed_dir, sample_name)
         ) + glob.glob(
-            '%s/%s*_R2_*.fastq.gz' % (trimmed_dir, sample_name))
+            '%s/%s_*_R2_*.fastq.gz' % (trimmed_dir, sample_name))
     return fastqs
 
 
