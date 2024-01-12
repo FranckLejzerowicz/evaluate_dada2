@@ -35,20 +35,30 @@ def get_fors_revs(
     return forwards, reverses
 
 
+def mk_dirs(to_create):
+    for d in to_create:
+        if not isdir(d):
+            os.makedirs(d)
+
+
 def define_dirs(base_dir):
     # fastq directory with the samples we are using
+    to_create = []
     trimmed_dir = "%s/01_trimmed" % base_dir
     denoized_dir = "%s/02_denoized" % base_dir
+    to_create.append(denoized_dir)
+
     eval_dir = "%s/03_evaluated" % base_dir
     for subdir in ['asv', 'taxo']:
-        if not isdir('%s/%s' % (eval_dir, subdir)):
-            os.makedirs('%s/%s' % (eval_dir, subdir))
+        to_create.append('%s/%s' % (eval_dir, subdir))
 
-    figure_dir = "%s/figure_dir" % base_dir
-    if not isdir(figure_dir):
-        os.makedirs(figure_dir)
+    figure_dir = "%s/figures" % base_dir
+    to_create.append(figure_dir)
     pdf_fp = '%s/denoizing_exploration.pdf' % figure_dir
     pdf = PdfPages(pdf_fp)
+
+    mk_dirs(to_create)
+
     return trimmed_dir, denoized_dir, eval_dir, pdf_fp, pdf
 
 
