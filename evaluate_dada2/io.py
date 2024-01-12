@@ -54,10 +54,10 @@ def define_dirs(base_dir):
 
     figure_dir = "%s/figures" % base_dir
     to_create.append(figure_dir)
+    mk_dirs(to_create)
+
     pdf_fp = '%s/denoizing_exploration.pdf' % figure_dir
     pdf = PdfPages(pdf_fp)
-
-    mk_dirs(to_create)
 
     return trimmed_dir, denoized_dir, eval_dir, pdf_fp, pdf
 
