@@ -10,7 +10,7 @@ import os
 import glob
 import zipfile
 import pandas as pd
-from os.path import isdir
+from os.path import isdir, isfile
 from matplotlib.backends.backend_pdf import PdfPages
 from evaluate_dada2.mock import get_mock_sams_rep
 
@@ -60,6 +60,28 @@ def define_dirs(base_dir):
     pdf = PdfPages(pdf_fp)
 
     return trimmed_dir, denoized_dir, eval_dir, pdf_fp, pdf
+
+
+def to_do(out_files):
+    for vals in out_files.values():
+        s = sum([isfile(x) for x in vals])
+        if s == 3:
+            continue
+        return True
+
+
+def get_out_files(combis_split, denoized_dir):
+    out_files = {}
+    for combis in combis_split:
+        for (forward, reverse) in combis:
+            fr_dir = '%s/%s-%s' % (denoized_dir, forward, reverse)
+            if not isdir(fr_dir):
+                os.makedirs(fr_dir)
+            tab_fp = '%s/table.qza' % fr_dir
+            seq_fp = '%s/sequences.qza' % fr_dir
+            sta_fp = '%s/stats.qza' % fr_dir
+            out_files[(forward, reverse)] = (tab_fp, seq_fp, sta_fp)
+    return out_files
 
 
 def get_metadata(metadata):
