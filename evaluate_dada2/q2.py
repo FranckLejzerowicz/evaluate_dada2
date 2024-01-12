@@ -34,15 +34,9 @@ def run_evaluation(mock_ref_q2, mock_sam_q2, depth=1):
     return evaluation
 
 
-def run_denoise(combis, trimmed_seqs, denoized_dir):
-    res = {}
+def run_denoise(combis, trimmed_seqs, out_files):
     for (forward, reverse) in combis:
-        fr_dir = '%s/%s-%s' % (denoized_dir, forward, reverse)
-        if not isdir(fr_dir):
-            os.makedirs(fr_dir)
-        tab_fp = '%s/table.qza' % fr_dir
-        seq_fp = '%s/sequences.qza' % fr_dir
-        sta_fp = '%s/stats.qza' % fr_dir
+        tab_fp, seq_fp, sta_fp = out_files[(forward, reverse)]
         if not (isfile(tab_fp) and isfile(seq_fp) and isfile(sta_fp)):
             tab, seq, sta = denoise_paired(
                 demultiplexed_seqs=trimmed_seqs,
@@ -58,17 +52,14 @@ def run_denoise(combis, trimmed_seqs, denoized_dir):
             tab.save(tab_fp)
             seq.save(seq_fp)
             sta.save(sta_fp)
-        res[(forward, reverse)] = (tab_fp, seq_fp, sta_fp)
-    return res
 
 
-def get_results(results_):
+def get_results(out_files):
     results = {}
-    for result in results_:
-        for fr, (tab_fp, seq_fp, sta_fp) in result.items():
-            results[fr] = (Artifact.load(tab_fp),
-                           Artifact.load(seq_fp),
-                           Artifact.load(sta_fp))
+    for fr, (tab_fp, seq_fp, sta_fp) in out_files.items():
+        results[fr] = (Artifact.load(tab_fp),
+                       Artifact.load(seq_fp),
+                       Artifact.load(sta_fp))
     return results
 
 
