@@ -11,7 +11,7 @@ import itertools
 import subprocess
 import numpy as np
 import pandas as pd
-from os.path import isdir
+from os.path import isdir, isfile
 from multiprocessing import cpu_count
 from qiime2 import Artifact, Metadata
 from qiime2.plugins.dada2.methods import denoise_paired
@@ -37,26 +37,27 @@ def run_evaluation(mock_ref_q2, mock_sam_q2, depth=1):
 def run_denoise(combis, trimmed_seqs, denoized_dir):
     res = {}
     for (forward, reverse) in combis:
-        tab, seq, sta = denoise_paired(
-            demultiplexed_seqs=trimmed_seqs,
-            trunc_len_f=forward,
-            trunc_len_r=reverse,
-            max_ee_f=2,
-            max_ee_r=2,
-            trunc_q=20,
-            chimera_method="consensus",
-            n_threads=1,
-            hashed_feature_ids=True
-        )
         fr_dir = '%s/%s-%s' % (denoized_dir, forward, reverse)
         if not isdir(fr_dir):
             os.makedirs(fr_dir)
         tab_fp = '%s/table.qza' % fr_dir
         seq_fp = '%s/sequences.qza' % fr_dir
         sta_fp = '%s/stats.qza' % fr_dir
-        tab.save(tab_fp)
-        seq.save(seq_fp)
-        sta.save(sta_fp)
+        if isfile(tab_fp) and isfile(seq_fp) and isfile(sta_fp):
+            tab, seq, sta = denoise_paired(
+                demultiplexed_seqs=trimmed_seqs,
+                trunc_len_f=forward,
+                trunc_len_r=reverse,
+                max_ee_f=2,
+                max_ee_r=2,
+                trunc_q=20,
+                chimera_method="consensus",
+                n_threads=1,
+                hashed_feature_ids=True
+            )
+            tab.save(tab_fp)
+            seq.save(seq_fp)
+            sta.save(sta_fp)
         res[(forward, reverse)] = (tab_fp, seq_fp, sta_fp)
     return res
 
