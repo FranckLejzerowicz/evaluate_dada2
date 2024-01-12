@@ -53,7 +53,7 @@ def get_clusters(ref_seqs, seq, tab):
     for p, (_, __, ref_seq) in ref_seqs.items():
         open_table, open_seqs, _ = cluster_features_open_reference(
             sequences=seq, table=tab, reference_sequences=ref_seq,
-            perc_identity=float(p), threads=4)
+            perc_identity=float(p), threads=1)
         open_table_relab = relative_frequency(open_table)
         clusters[p] = (open_table, open_table_relab, open_seqs)
     return clusters
