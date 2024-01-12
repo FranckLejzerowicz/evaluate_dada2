@@ -8,7 +8,6 @@
 
 import os
 import glob
-import shutil
 import zipfile
 import pandas as pd
 from os.path import isdir
@@ -98,5 +97,4 @@ def qzv_unzip(eval_dir, evaluation_fp):
                 'misclass': pd.read_table(misclass_fp),
                 'underclass': pd.read_table(underclass_tsv),
                 'res': pd.read_table(results_fp)}
-    shutil.rmtree(exdir)
     return qza_outs
