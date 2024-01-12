@@ -72,13 +72,10 @@ def get_results(results_):
     return results
 
 
-def get_combis_split(forwards, reverses):
+def get_combis_split(forwards, reverses, n_cores):
     """Make splits as per the number of CPUs"""
     combis = [it for it in itertools.product(*[forwards, reverses])]
-    n_splits = int(cpu_count() / 4)
-    if n_splits > 4:
-        n_splits = 4
-    combis_split = [x for x in np.array_split(combis, n_splits) if len(x)][:6]
+    combis_split = [x for x in np.array_split(combis, n_cores) if len(x)]
     return combis_split
 
 
