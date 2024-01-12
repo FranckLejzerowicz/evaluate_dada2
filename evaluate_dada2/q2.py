@@ -43,7 +43,7 @@ def run_denoise(combis, trimmed_seqs, denoized_dir):
         tab_fp = '%s/table.qza' % fr_dir
         seq_fp = '%s/sequences.qza' % fr_dir
         sta_fp = '%s/stats.qza' % fr_dir
-        if isfile(tab_fp) and isfile(seq_fp) and isfile(sta_fp):
+        if not (isfile(tab_fp) and isfile(seq_fp) and isfile(sta_fp)):
             tab, seq, sta = denoise_paired(
                 demultiplexed_seqs=trimmed_seqs,
                 trunc_len_f=forward,
