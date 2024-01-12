@@ -62,7 +62,7 @@ def run_dada2(
 
     # Run the run_dada2.R script through qiime2
     pool = multiprocessing.Pool(n_cores)
-    combis_split = get_combis_split(forwards, reverses)
+    combis_split = get_combis_split(forwards, reverses, n_cores)
     combis_split = [(x, trimmed_seqs, denoized_dir) for x in combis_split]
     results_ = pool.starmap(run_denoise, combis_split)
     pool.close()
