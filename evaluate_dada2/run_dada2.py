@@ -9,7 +9,8 @@
 import multiprocessing
 
 from evaluate_dada2.io import (
-    get_fors_revs, define_dirs, get_metadata, get_fastqs, get_trimmed_seqs)
+    get_fors_revs, define_dirs, get_metadata, get_fastqs,
+    get_trimmed_seqs, get_out_files, to_do)
 from evaluate_dada2.q2 import (
     load_trimmed_seqs, get_combis_split, run_denoise, get_results, get_stats_pd)
 from evaluate_dada2.mock import (
@@ -37,10 +38,12 @@ def run_dada2(
     mini, maxi, step = trim_range
     forwards, reverses = get_fors_revs(mini, maxi, step, trim_lengths,
                                        f_trim_lengths, r_trim_lengths)
+    combis_split = get_combis_split(forwards, reverses, n_cores)
     print("Will trim forward reads to", ' nt, '.join(
         map(str, list(forwards))), 'nt')
     print("Will trim reverse reads to", ' nt, '.join(
         map(str, list(reverses))), 'nt')
+    print("That is %s combinations" % len([y for x in combis_split for y in x]))
 
     print("Metadata file:", metadata)
     print("Mock community files in:", mock_ref_dir)
@@ -48,27 +51,30 @@ def run_dada2(
     print("Metadata variables to check:", '; '.join(sorted(meta_cols)))
 
     trimmed_dir, denoized_dir, eval_dir, pdf_fp, pdf = define_dirs(base_dir)
-    meta, mock_sams, mock_sams_rep = get_metadata(metadata)
-    fastqs = get_fastqs(meta, trimmed_dir)
-    print("Fastq files in:", base_dir, "[%s samples detected]" % len(fastqs))
+    out_files = get_out_files(combis_split, denoized_dir)
 
-    manifest = get_trimmed_seqs(fastqs, denoized_dir)
-    trimmed_seqs = load_trimmed_seqs(manifest)
+    # metadata things
+    meta, mock_sams, mock_sams_rep = get_metadata(metadata)
     if 'control_type' not in meta_cols:
         meta_cols = ['control_type'] + sorted(meta_cols)
 
+    # mock things
     ref_seqs = get_ref_seqs(mock_ref_dir)
     ref_tax_d = get_ref_tax_d(mock_ref_dir, ref_tax_file)
 
-    # Run the run_dada2.R script through qiime2
-    pool = multiprocessing.Pool(n_cores)
-    combis_split = get_combis_split(forwards, reverses, n_cores)
-    combis_split = [(x, trimmed_seqs, denoized_dir) for x in combis_split]
-    results_ = pool.starmap(run_denoise, combis_split)
-    pool.close()
-    pool.join()
+    # DADA2 things
+    if to_do(out_files):
+        fastqs = get_fastqs(meta, trimmed_dir)
+        print("Fastq files in", base_dir, "[%s samples detected]" % len(fastqs))
+        manifest = get_trimmed_seqs(fastqs, denoized_dir)
+        trimmed_seqs = load_trimmed_seqs(manifest)
+        pool = multiprocessing.Pool(n_cores)
+        pool_params = [(x, trimmed_seqs, out_files) for x in combis_split]
+        pool.starmap(run_denoise, pool_params)
+        pool.close()
+        pool.join()
 
-    results = get_results(results_)
+    results = get_results(out_files)
     stats_pd = get_stats_pd(results)
 
     make_heatmap_outputs(meta, stats_pd, pdf)
