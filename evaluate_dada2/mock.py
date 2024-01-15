@@ -6,7 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import os
 import glob
 import itertools
 
@@ -53,9 +52,11 @@ def get_plots_pd(meta_combis, meta, mock_sam, tab_mock, value_name):
 def get_clusters(ref_seqs, seq, tab):
     clusters = {}
     for p, (_, __, ref_seq) in ref_seqs.items():
+        print('Clustering vs DB version p="%s"' % p)
         open_table, open_seqs, _ = cluster_features_open_reference(
             sequences=seq, table=tab, reference_sequences=ref_seq,
             perc_identity=float(p), threads=1)
+        print('Turning to relative frequencies')
         open_table_relab = relative_frequency(open_table)
         clusters[p] = (open_table, open_table_relab, open_seqs)
     return clusters
