@@ -10,7 +10,7 @@ import multiprocessing
 
 from evaluate_dada2.io import (
     get_fors_revs, define_dirs, get_metadata, get_fastqs,
-    get_trimmed_seqs, get_out_files, to_do, change_modes)
+    get_trimmed_seqs, get_out_files, to_do)
 from evaluate_dada2.q2 import (
     load_trimmed_seqs, get_combis_split, run_denoise, get_results, get_stats_pd)
 from evaluate_dada2.mock import (
@@ -77,7 +77,6 @@ def run_dada2(
     results = get_results(out_files)
     stats_pd = get_stats_pd(results)
 
-    change_modes()
     make_heatmap_outputs(meta, stats_pd, pdf)
     perform_open_ref(results, ref_seqs, mock_sams, meta, meta_cols, pdf)
     blast_dbs, mock_ref_q2s = get_mock_refs(ref_seqs, ref_tax_d, ranks)

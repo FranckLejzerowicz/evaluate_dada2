@@ -6,6 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
+import os
 import glob
 import itertools
 
@@ -16,6 +17,13 @@ from qiime2.plugins.vsearch.pipelines import cluster_features_open_reference
 from qiime2.plugins.feature_table.methods import relative_frequency
 from evaluate_dada2.blast import makeblastdb
 from evaluate_dada2.plots import plot_regressions
+
+
+def change_modes():
+    if os.environ['TMPDIR']:
+        for root, dirs, files in os.walk(os.environ['TMPDIR']):
+            for d in dirs:
+                os.chmod(os.path.join(root, d), 0o41777)
 
 
 def get_mock_sams_rep(mock_sams):
@@ -52,6 +60,7 @@ def get_plots_pd(meta_combis, meta, mock_sam, tab_mock, value_name):
 def get_clusters(ref_seqs, seq, tab):
     clusters = {}
     for p, (_, __, ref_seq) in ref_seqs.items():
+        change_modes()
         open_table, open_seqs, _ = cluster_features_open_reference(
             sequences=seq, table=tab, reference_sequences=ref_seq,
             perc_identity=float(p), threads=1)

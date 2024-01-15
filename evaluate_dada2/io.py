@@ -130,10 +130,3 @@ def qzv_unzip(eval_dir, evaluation_fp):
                 'underclass': pd.read_table(underclass_tsv),
                 'res': pd.read_table(results_fp)}
     return qza_outs
-
-
-def change_modes():
-    if os.environ['TMPDIR']:
-        for root, dirs, files in os.walk(os.environ['TMPDIR']):
-            for d in dirs:
-                os.chmod(os.path.join(root, d), 0o41777)
