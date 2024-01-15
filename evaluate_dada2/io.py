@@ -133,9 +133,7 @@ def qzv_unzip(eval_dir, evaluation_fp):
 
 
 def change_modes():
-    print(os.environ['TMPDIR'])
-    print(osenvironfdsa)
     if os.environ['TMPDIR']:
         for root, dirs, files in os.walk(os.environ['TMPDIR']):
             for d in dirs:
-                os.chmod(os.path.join(root, d), 0o774)
+                os.chmod(os.path.join(root, d), 0o41777)
