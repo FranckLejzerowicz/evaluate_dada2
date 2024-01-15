@@ -19,11 +19,14 @@ from evaluate_dada2.blast import makeblastdb
 from evaluate_dada2.plots import plot_regressions
 
 
-def change_modes():
-    if os.environ['TMPDIR']:
-        for root, dirs, files in os.walk(os.environ['TMPDIR']):
-            for d in dirs:
-                os.chmod(os.path.join(root, d), 0o41777)
+def change_modes_clust():
+    usr = os.environ['USER']
+    tmp = os.environ['TMPDIR']
+    start_folder = '%s/qiime2/%s/processes' % (tmp, usr)
+    os.chmod(start_folder, 0o41777)
+    for root, dirs, files in os.walk(start_folder):
+        for d in dirs:
+            os.chmod(os.path.join(root, d), 0o41777)
 
 
 def get_mock_sams_rep(mock_sams):
