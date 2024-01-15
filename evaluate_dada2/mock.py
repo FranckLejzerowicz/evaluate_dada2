@@ -63,7 +63,7 @@ def get_plots_pd(meta_combis, meta, mock_sam, tab_mock, value_name):
 def get_clusters(ref_seqs, seq, tab):
     clusters = {}
     for p, (_, __, ref_seq) in ref_seqs.items():
-        change_modes()
+        change_modes_clust()
         open_table, open_seqs, _ = cluster_features_open_reference(
             sequences=seq, table=tab, reference_sequences=ref_seq,
             perc_identity=float(p), threads=1)
