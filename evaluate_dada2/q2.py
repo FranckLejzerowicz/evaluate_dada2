@@ -11,8 +11,7 @@ import itertools
 import subprocess
 import numpy as np
 import pandas as pd
-from os.path import isdir, isfile
-from multiprocessing import cpu_count
+from os.path import isfile
 from qiime2 import Artifact, Metadata
 from qiime2.plugins.dada2.methods import denoise_paired
 from qiime2.plugins.quality_control.visualizers import evaluate_composition

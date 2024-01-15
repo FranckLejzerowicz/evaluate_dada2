@@ -8,9 +8,10 @@
 
 import glob
 import itertools
+
 import pandas as pd
 from os.path import dirname
-from qiime2 import Artifact, Metadata
+from qiime2 import Artifact
 from qiime2.plugins.vsearch.pipelines import cluster_features_open_reference
 from qiime2.plugins.feature_table.methods import relative_frequency
 from evaluate_dada2.blast import makeblastdb

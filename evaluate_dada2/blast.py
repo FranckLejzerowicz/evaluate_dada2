@@ -8,7 +8,7 @@
 
 import os
 import pandas as pd
-from qiime2 import Artifact, Metadata
+from qiime2 import Metadata
 from evaluate_dada2.q2 import spawn_subprocess
 
 
