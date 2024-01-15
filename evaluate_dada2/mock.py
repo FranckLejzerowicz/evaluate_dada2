@@ -19,16 +19,6 @@ from evaluate_dada2.blast import makeblastdb
 from evaluate_dada2.plots import plot_regressions
 
 
-def change_modes_clust():
-    usr = os.environ['USER']
-    tmp = os.environ['TMPDIR']
-    start_folder = '%s/qiime2/%s/processes' % (tmp, usr)
-    os.chmod(start_folder, 0o41777)
-    for root, dirs, files in os.walk(start_folder):
-        for d in dirs:
-            os.chmod(os.path.join(root, d), 0o41777)
-
-
 def get_mock_sams_rep(mock_sams):
     mock_sams_rep = {}
     for idx, mock_sam in enumerate(mock_sams):
@@ -63,7 +53,6 @@ def get_plots_pd(meta_combis, meta, mock_sam, tab_mock, value_name):
 def get_clusters(ref_seqs, seq, tab):
     clusters = {}
     for p, (_, __, ref_seq) in ref_seqs.items():
-        change_modes_clust()
         open_table, open_seqs, _ = cluster_features_open_reference(
             sequences=seq, table=tab, reference_sequences=ref_seq,
             perc_identity=float(p), threads=1)
