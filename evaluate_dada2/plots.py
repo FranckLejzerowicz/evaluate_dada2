@@ -11,19 +11,23 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-def plot_regressions(plots_pd, value_name, empties, mock_sam, f, r, p, pdf):
-    g = sns.lmplot(
-        data=plots_pd, x='mock (% reads)', y=value_name,
-        hue='variable', col='comparison', height=4, aspect=0.8,
-        facet_kws={'sharex': False, 'sharey': False})
-    g.set_titles('{col_name}')
-    plt.suptitle(
-        '[%s-%s] Relative abundances of mock "%s" vs samples features (open-ref clust=%s)\n'
-        '(%s %s of metadata samples do not shared any mock feature)' % (
-            f, r, mock_sam, p, round(empties, 2), "%"), fontsize=14)
-    plt.subplots_adjust(top=0.8)
-    pdf.savefig(bbox_inches='tight')
-    plt.close()
+def plot_regressions(plots_pd, pdf):
+    for (f, r, p, s), cur_pd in plots_pd.groupby(
+            ['forward', 'reverse', 'perc_identity', 'mock_sample']
+    ):
+        empties = cur_pd['perc_empty_samples'].tolist()[0]
+        g = sns.lmplot(
+            data=cur_pd, x='mock (% reads)', y='sample (% reads)',
+            hue='variable', col='comparison', col_wrap=3, height=4, aspect=0.8,
+            facet_kws={'sharex': False, 'sharey': False})
+        g.set_titles('{col_name}')
+        plt.suptitle(
+            '[%s-%s] Relative abundances of mock "%s" vs samples features (open-ref clust=%s)\n'
+            '(%s %s of metadata samples do not shared any mock feature)' % (
+                f, r, s, p, round(empties, 2), "%"), fontsize=14)
+        plt.subplots_adjust(top=0.8)
+        pdf.savefig(bbox_inches='tight')
+        plt.close()
 
 
 def make_heatmap_outputs(meta, stats_pd, pdf):
@@ -55,9 +59,9 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
         plt.close()
 
 
-def make_heatmap_blast_asv(blast_in, pdf):
+def make_heatmap_blast_asv(blast_in_pd, pdf):
     """Parse the BLAST results to get the numbers of proper hits"""
-    nqueries_pv = blast_in.pivot_table(
+    nqueries_pv = blast_in_pd.pivot_table(
         index=['forward'],
         columns=['reverse'],
         values=['nqueries'])
@@ -119,7 +123,7 @@ def make_heatmap_classifs(outs, txts, pdf):
             n_p = gb_pd['p'].nunique()
             fig, axes = plt.subplots(1, n_p, figsize=(n_p * 12, 6))
             for pdx, (p, p_pd) in enumerate(gb_pd.groupby('p')):
-                taxa_len = p_pd.pivot_table(
+                taxa_len = p_pd[['f', 'r', 'Taxon']].pivot_table(
                     index=['f'], columns=['r'], values=['Taxon'],
                     aggfunc=lambda x: len(set([i for i in x if i != 'None'])))
                 if level == 'taxo':
@@ -127,12 +131,12 @@ def make_heatmap_classifs(outs, txts, pdf):
                         sorted(set([i.split(';')[-1].strip() for i in x])))
                 else:
                     func = lambda x: '\n'.join(
-                        [';'.join(i) if len(set(x)) < 10 else '>10 IDs'
+                        [';'.join(i) if len(set(x)) < 5 else '>5 IDs'
                          for i in np.array_split(sorted(set(x)), 4)])
-                taxa_names = p_pd.pivot_table(
+                taxa_names = p_pd[['f', 'r', 'Taxon']].pivot_table(
                     index=['f'], columns=['r'], values=['Taxon'],
                     aggfunc=func)
-                taxa_relab = p_pd.pivot_table(
+                taxa_relab = p_pd[['f', 'r', 'mock']].pivot_table(
                     index=['f'], columns=['r'], values=['mock'],
                     aggfunc=sum)
                 taxa_relab.columns = taxa_relab.columns.droplevel()
@@ -154,9 +158,9 @@ def make_heatmap_classifs(outs, txts, pdf):
 
 def make_heatmap_stats(outs, txts, pdf):
     gb = ['type', 'level', 'sam', "p"]
-    for (typ, level, sam, p), gb_pd in outs['res'].groupby(gb,
+    for (typ, l, sam, p), gb_pd in outs['results'].groupby(gb,
                                                            group_keys=False):
-        if typ == 'taxo' and level == 1:
+        if typ == 'taxo' and l == 1:
             continue
         fig, axes = plt.subplots(2, 3, figsize=(14, 7))
 
@@ -231,7 +235,7 @@ def make_heatmap_stats(outs, txts, pdf):
         else:
             plt.suptitle(
                 'Feature evaluation: mock "%s" vs ref (p=%s) [%s level %s]' % (
-                    sam, p, typ, level), fontsize=15, fontweight="bold")
+                    sam, p, typ, l), fontsize=15, fontweight="bold")
         plt.subplots_adjust(top=0.85, hspace=0.525)
         pdf.savefig(bbox_inches='tight')
         plt.close()

@@ -45,7 +45,11 @@ from evaluate_dada2.run_dada2 import run_dada2
 @click.option(
     "-n", "--p-n-cores", type=int, nargs=1, show_default=False,
     default=4, help="Number of cores for multiprocessing")
-@click.version_option(__version__, prog_name="Xhpc")
+@click.option(
+    "--sample-regressions/--no-sample-regressions",
+    default=False, show_default=True,
+    help="Make regression for mock features in actual samples")
+@click.version_option(__version__, prog_name="evaluate_dada2")
 
 
 def standalone_dada2(

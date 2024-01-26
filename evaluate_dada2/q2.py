@@ -6,7 +6,6 @@
 # The full license is in the file LICENSE, distributed with this software.
 # ----------------------------------------------------------------------------
 
-import os
 import itertools
 import subprocess
 import numpy as np
@@ -14,6 +13,7 @@ import pandas as pd
 from os.path import isfile
 from qiime2 import Artifact, Metadata
 from qiime2.plugins.dada2.methods import denoise_paired
+from qiime2.plugins.feature_table.methods import filter_samples
 from qiime2.plugins.quality_control.visualizers import evaluate_composition
 
 
@@ -24,9 +24,9 @@ def load_trimmed_seqs(manifest):
     return trimmed_seqs
 
 
-def run_evaluation(mock_ref_q2, mock_sam_q2, depth=1):
+def run_evaluation(ref_q2, sam_q2, depth=1):
     evaluation = evaluate_composition(
-        expected_features=mock_ref_q2, observed_features=mock_sam_q2,
+        expected_features=ref_q2, observed_features=sam_q2,
         depth=depth, palette='Set1', plot_tar=True, plot_r_value=True,
         plot_r_squared=True, plot_jaccard=True, plot_bray_curtis=True,
         plot_observed_features=True, plot_observed_features_ratio=True)
@@ -48,18 +48,24 @@ def run_denoise(combis, trimmed_seqs, out_files):
                 n_threads=1,
                 hashed_feature_ids=True
             )
-            tab.save(tab_fp)
+            tab_filt = filter_samples(
+                tab,
+                min_frequency=1,
+                min_features=1,
+                filter_empty_features=True
+            )
+            tab_filt.filtered_table.save(tab_fp)
             seq.save(seq_fp)
             sta.save(sta_fp)
 
 
 def get_results(out_files):
-    results = {}
+    dada2 = {}
     for fr, (tab_fp, seq_fp, sta_fp) in out_files.items():
-        results[fr] = (Artifact.load(tab_fp),
-                       Artifact.load(seq_fp),
-                       Artifact.load(sta_fp))
-    return results
+        dada2[fr] = (
+            Artifact.load(tab_fp), Artifact.load(seq_fp), Artifact.load(sta_fp)
+        )
+    return dada2
 
 
 def get_combis_split(forwards, reverses, n_cores):
@@ -72,16 +78,16 @@ def get_combis_split(forwards, reverses, n_cores):
 def spawn_subprocess(cmd):
     # This function will launch the command
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # and retrie£ve the "standard output"
+    # and retrieve the "standard output"
     out, err = p.communicate()
     out = out.decode().strip().split('\n')
     return out
 
 
-def get_stats_pd(results):
+def get_stats_pd(dada2):
     """Concatenate the stats from the runs"""
     stats_pds = []
-    for (f, r), (tab, seq, sta) in results.items():
+    for (f, r), (tab, seq, sta) in dada2.items():
         stats_pd = sta.view(Metadata).to_dataframe()
         stats_pd['for-rev'] = '%s-%s' % (f, r)
         stats_pd['forward'] = f

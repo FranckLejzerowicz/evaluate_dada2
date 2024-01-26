@@ -8,11 +8,10 @@
 
 import os
 import glob
+import shutil
 import zipfile
 import pandas as pd
 from os.path import isdir, isfile
-from matplotlib.backends.backend_pdf import PdfPages
-from evaluate_dada2.mock import get_mock_sams_rep
 
 
 def get_fors_revs(
@@ -30,8 +29,8 @@ def get_fors_revs(
         forwards = [int(x) for x in f_values]
         reverses = [int(x) for x in r_values]
     else:
-        forwards = range(mini, maxi, step)
-        reverses = range(mini, maxi, step)
+        forwards = range(mini, (maxi+1), step)
+        reverses = range(mini, (maxi+1), step)
     return forwards, reverses
 
 
@@ -57,9 +56,7 @@ def define_dirs(base_dir):
     mk_dirs(to_create)
 
     pdf_fp = '%s/denoizing_exploration.pdf' % figure_dir
-    pdf = PdfPages(pdf_fp)
-
-    return trimmed_dir, denoized_dir, eval_dir, pdf_fp, pdf
+    return trimmed_dir, denoized_dir, eval_dir, pdf_fp
 
 
 def to_do(out_files):
@@ -88,8 +85,7 @@ def get_metadata(metadata):
     meta = pd.read_table(metadata)
     mock_sams = list(
         meta[meta['control_type'] == 'control positive'].sample_name)
-    mock_sams_rep = get_mock_sams_rep(mock_sams)
-    return meta, mock_sams, mock_sams_rep
+    return meta, mock_sams
 
 
 def get_fastqs(meta, trimmed_dir):
@@ -125,8 +121,11 @@ def qzv_unzip(eval_dir, evaluation_fp):
     misclass_fp = inf + '/misclassifications.tsv'
     underclass_tsv = inf + '/underclassifications.tsv'
     results_fp = inf + '/results.tsv'
-    qza_outs = {'false_neg': pd.read_table(false_neg_fp),
-                'misclass': pd.read_table(misclass_fp),
-                'underclass': pd.read_table(underclass_tsv),
-                'res': pd.read_table(results_fp)}
-    return qza_outs
+    false_neg = pd.read_table(false_neg_fp)
+    misclass = pd.read_table(misclass_fp)
+    underclass = pd.read_table(underclass_tsv)
+    results = pd.read_table(results_fp)
+    qzv_outs = {'false_neg': false_neg, 'misclass': misclass,
+                'underclass': underclass, 'results': results}
+    shutil.rmtree(exdir)
+    return qzv_outs

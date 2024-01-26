@@ -51,9 +51,9 @@ def makeblastdb(blast_db):
     spawn_subprocess(cmd)
 
 
-def write_seq_to_blast(seq_out, tab, seq, mock_sams):
-    mock_tab = tab.view(pd.DataFrame).T[mock_sams]
-    mock_seqs_ids = mock_tab[mock_tab[mock_sams].sum(1) > 0].index
+def write_seq_to_blast(seq_out, tab, seq, mocks):
+    mock_tab = tab.view(pd.DataFrame).T[mocks]
+    mock_seqs_ids = mock_tab[mock_tab[mocks].sum(1) > 0].index
     mock_seqs = seq.view(Metadata).to_dataframe().loc[mock_seqs_ids]
     with open(seq_out, "w") as o:
         for r, row in mock_seqs.iterrows():
@@ -63,8 +63,7 @@ def write_seq_to_blast(seq_out, tab, seq, mock_sams):
 
 def blastn(seq_out, blast_db):
     out_cols = ['qseqid', 'sseqid', 'pident', 'bitscore', 'qcovs']
-    cmd = ['/Users/franck/programs/ncbi-blast-2.12.0+/bin/blastn',
-           '-query', seq_out, '-db', blast_db,
+    cmd = ['blastn', '-query', seq_out, '-db', blast_db,
            '-outfmt', '6 delim=@ %s' % ' '.join(out_cols)]
     blast_out = pd.DataFrame(
         [x.split('@') for x in spawn_subprocess(cmd)],
@@ -72,33 +71,28 @@ def blastn(seq_out, blast_db):
     return blast_out
 
 
-def run_blasts(eval_dir, results, mock_sams, blast_dbs):
+def run_blasts(dada2, eval_dir, mocks, blast_dbs, blast_in, blast_out):
     """Perform the BLAST searches"""
-    blast_ins = []
-    blast_outs = []
-    for (fwd, rev), (tab, seq, _) in results.items():
+    blast_ins_pds = []
+    blast_outs_pds = []
+    for (fwd, rev), (tab, seq, _) in dada2.items():
         seq_out = '%s/%s-%s_toblast.fa' % (eval_dir, fwd, rev)
-        mock_seqs_ids = write_seq_to_blast(seq_out, tab, seq, mock_sams)
-        blast_ins.append([fwd, rev, len(mock_seqs_ids)])
+        mock_seqs_ids = write_seq_to_blast(seq_out, tab, seq, mocks)
+        blast_ins_pds.append([fwd, rev, len(mock_seqs_ids)])
         for p, blast_db in blast_dbs.items():
-            blast_out = blastn(seq_out, blast_db)
-            blast_out['forward'] = fwd
-            blast_out['reverse'] = rev
-            blast_out['perc_identity'] = p
-            blast_outs.append(blast_out)
+            blast_out_pd = blastn(seq_out, blast_db)
+            blast_out_pd['forward'] = fwd
+            blast_out_pd['reverse'] = rev
+            blast_out_pd['perc_identity'] = p
+            blast_outs_pds.append(blast_out_pd)
         os.remove(seq_out)
 
-    tab_out = '%s/blast_out.tsv' % eval_dir
-    blast_out = pd.concat(blast_outs)
-    blast_out.to_csv(tab_out, index=False, sep='\t')
-    blast_out = pd.read_table(tab_out)
+    blast_outs_pd = pd.concat(blast_outs_pds)
+    blast_outs_pd.to_csv(blast_out, index=False, sep='\t')
 
-    tab_in = '%s/blast_in.tsv' % eval_dir
-    blast_in = pd.DataFrame(
-        blast_ins, columns=['forward', 'reverse', 'nqueries'])
-    blast_in.to_csv(tab_in, index=False, sep='\t')
-    blast_in = pd.read_table(tab_in)
-    return blast_out, blast_in
+    blast_ins_pd = pd.DataFrame(
+        blast_ins_pds, columns=['forward', 'reverse', 'nqueries'])
+    blast_ins_pd.to_csv(blast_in, index=False, sep='\t')
 
 
 def get_hits_pd(blast_out):
@@ -108,7 +102,6 @@ def get_hits_pd(blast_out):
     for pdx, ((f, r, p, q), params_pd) in enumerate(blast_out.groupby(gb_cols)):
         ref, cause = get_ref(params_pd)
         hits.append([f, r, p, q, ref, cause])
-
     hits_pd = pd.DataFrame(hits, columns=[
         'forward', 'reverse', 'perc_identity', 'seq', 'ref', 'cause'])
     return hits_pd
