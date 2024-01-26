@@ -35,7 +35,8 @@ def run_dada2(
         trim_lengths,
         f_trim_lengths,
         r_trim_lengths,
-        n_cores
+        n_cores,
+        sample_regressions
 ):
     mini, maxi, step = trim_range
     forwards, reverses = get_fors_revs(mini, maxi, step, trim_lengths,
@@ -90,19 +91,20 @@ def run_dada2(
 
     print("Making heatmaps from DADA2 stat results")
     make_heatmap_outputs(meta, stats_pd, pdf)
-    print("Loading reference mock into qiime2 and for BLASTn")
-    blast_dbs, mock_q2s = get_mock_refs(ref_seqs, refs, ranks)
-    if not os.path.isfile(lmplot_fp):
-        print("Open-reference clustering on the mock references")
-        plots_pd = open_ref(dada2, ref_seqs, mocks, meta, meta_cols)
-        plots_pd.to_csv(lmplot_fp, index=False, sep='\t')
-    else:
-        plots_pd = pd.read_table(lmplot_fp)
-    print("Plotting regressions for relative abundances of samples/mock ASVs")
-    plot_regressions(plots_pd, pdf)
+    if sample_regressions:
+        if not os.path.isfile(lmplot_fp):
+            print("Open-reference clustering on the mock references")
+            plots_pd = open_ref(dada2, ref_seqs, mocks, meta, meta_cols)
+            plots_pd.to_csv(lmplot_fp, index=False, sep='\t')
+        else:
+            plots_pd = pd.read_table(lmplot_fp)
+        print("Making regressions for relative abundances of samples/mock ASVs")
+        plot_regressions(plots_pd, pdf)
 
     blast_in = '%s/blast_in.tsv' % eval_dir
     blast_out = '%s/blast_out.tsv' % eval_dir
+    print("Loading reference mock into qiime2 and for BLASTn")
+    blast_dbs, mock_q2s = get_mock_refs(ref_seqs, refs, ranks)
     if not (os.path.isfile(blast_in) and os.path.isfile(blast_out)):
         print("Running BLASTn for ASVs vs mock references")
         run_blasts(dada2, eval_dir, mocks, blast_dbs, blast_in, blast_out)

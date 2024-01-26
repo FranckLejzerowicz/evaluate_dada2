@@ -63,7 +63,8 @@ def standalone_dada2(
         p_trim_lengths,
         p_f_trim_lengths,
         p_r_trim_lengths,
-        p_n_cores
+        p_n_cores,
+        sample_regressions
 ):
 
     run_dada2(
@@ -77,7 +78,8 @@ def standalone_dada2(
         trim_lengths=p_trim_lengths,
         f_trim_lengths=p_f_trim_lengths,
         r_trim_lengths=p_r_trim_lengths,
-        n_cores=p_n_cores
+        n_cores=p_n_cores,
+        sample_regressions=sample_regressions
     )
 
 
