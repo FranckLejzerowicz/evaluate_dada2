@@ -14,6 +14,7 @@ from evaluate_dada2.io import qzv_unzip
 from evaluate_dada2.mock import (
     get_asv_mock_sample, get_tax_mock_sample, get_mock_melt)
 from evaluate_dada2.q2 import run_evaluation
+from evaluate_dada2.io import get_fwd_rev
 
 
 def eval_asv(eval_dir, mock_q2s, t, m, p, f, r):
@@ -50,7 +51,8 @@ def collect(out, res, f, r, p, sam, level):
 
 def get_outs(dada2, eval_dir, mocks, hits_pd, mock_q2s, refs, ranks):
     out = {'false_neg': [], 'misclass': [], 'underclass': [], 'results': []}
-    for fdx, ((f, r), (tab, _, __)) in enumerate(dada2.items()):
+    for fdx, (fr, (tab, _, __)) in enumerate(dada2.items()):
+        f, r = get_fwd_rev(fr)
         print('[%s/%s] for: %s - rev: %s' % (fdx + 1, len(dada2), f, r))
         mock_pd = tab.view(pd.DataFrame).T[sorted(mocks)]
         mock_melt = get_mock_melt(mock_pd, hits_pd, list(mocks), f, r)

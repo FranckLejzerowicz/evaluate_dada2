@@ -44,8 +44,9 @@ def run_dada2(
     combis_split = get_combis_split(forwards, reverses, n_cores)
     print("Will trim forward reads to", ' nt, '.join(
         map(str, list(forwards))), 'nt')
-    print("Will trim reverse reads to", ' nt, '.join(
-        map(str, list(reverses))), 'nt')
+    if reverses:
+        print("Will trim reverse reads to", ' nt, '.join(
+            map(str, list(reverses))), 'nt')
     print("That is %s combinations" % len([y for x in combis_split for y in x]))
 
     print("Metadata file:", metadata)
@@ -75,12 +76,10 @@ def run_dada2(
         print("Running DADA2")
         fastqs = get_fastqs(meta, trimmed_dir)
         print("Fastq files in", base_dir, "[%s samples detected]" % len(fastqs))
-        manifest = get_trimmed_seqs(fastqs, denoized_dir)
-        trimmed_seqs = load_trimmed_seqs(manifest)
+        manifest = get_trimmed_seqs(fastqs, denoized_dir, reverses)
+        trimmed_seqs = load_trimmed_seqs(manifest, reverses)
         pool = multiprocessing.Pool(n_cores)
         pool_params = [(x, trimmed_seqs, out_files) for x in combis_split]
-        print("pool_params:")
-        print(pool_params)
         pool.starmap(run_denoise, pool_params)
         pool.close()
         pool.join()

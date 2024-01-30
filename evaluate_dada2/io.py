@@ -22,7 +22,10 @@ def get_fors_revs(
         f_values=(),
         r_values=()
 ):
-    if values:
+    if f_values and not r_values:
+        forwards = [int(x) for x in f_values]
+        reverses = []
+    elif values:
         forwards = [int(x) for x in values]
         reverses = [int(x) for x in values]
     elif f_values and r_values:
@@ -70,14 +73,14 @@ def to_do(out_files):
 def get_out_files(combis_split, denoized_dir):
     out_files = {}
     for combis in combis_split:
-        for (forward, reverse) in combis:
-            fr_dir = '%s/%s-%s' % (denoized_dir, forward, reverse)
+        for for_rev in combis:
+            fr_dir = '%s/%s' % (denoized_dir, '-'.join(map(str, for_rev)))
             if not isdir(fr_dir):
                 os.makedirs(fr_dir)
             tab_fp = '%s/table.qza' % fr_dir
             seq_fp = '%s/sequences.qza' % fr_dir
             sta_fp = '%s/stats.qza' % fr_dir
-            out_files[(forward, reverse)] = (tab_fp, seq_fp, sta_fp)
+            out_files[tuple(for_rev)] = (tab_fp, seq_fp, sta_fp)
     return out_files
 
 
@@ -98,14 +101,24 @@ def get_fastqs(meta, trimmed_dir):
     return fastqs
 
 
-def get_trimmed_seqs(fastqs, denoized_dir):
+def get_trimmed_seqs(fastqs, denoized_dir, reverses):
     manifest = '%s/MANIFEST' % denoized_dir
+    if reverses:
+        h = 'sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n'
+    else:
+        h = 'sample-id\tabsolute-filepath\n'
     with open(manifest, 'w') as o:
-        o.write(
-            'sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n')
-        for sample_name, (r1, r2) in sorted(fastqs.items()):
-            o.write('%s\t%s\t%s\n' % (sample_name, r1, r2))
+        o.write(h)
+        for sample_name, rs in sorted(fastqs.items()):
+            o.write('%s\t%s\n' % (sample_name, '\t'.join(rs)))
     return manifest
+
+
+def get_fwd_rev(fr):
+    fwd, rev = fr[0], 'None'
+    if len(fr) == 2:
+        rev = fr[1]
+    return fwd, rev
 
 
 def qzv_unzip(eval_dir, evaluation_fp):

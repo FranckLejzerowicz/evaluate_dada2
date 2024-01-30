@@ -10,16 +10,42 @@ import os
 import pandas as pd
 from qiime2 import Metadata
 from evaluate_dada2.q2 import spawn_subprocess
+from evaluate_dada2.io import get_fwd_rev
+
+
+def get_bests_pd(params_pd, max_pident, max_qcovs, or_=0):
+    # take the hits with best at both params, or either
+    if or_:
+        bests_pd = params_pd[
+            (params_pd['pident'] == max_pident) |
+            (params_pd['qcovs'] == max_qcovs)]
+    else:
+        bests_pd = params_pd[
+            (params_pd['pident'] == max_pident) &
+            (params_pd['qcovs'] == max_qcovs)]
+    return bests_pd
+
+
+def get_ref_cause_over80(params_pd, max_pident, max_qcovs, max_bitscore):
+    bests_pd = get_bests_pd(params_pd, max_pident, max_qcovs, 1)
+    best_score = bests_pd[bests_pd['bitscore'] == max_bitscore]
+    if best_score.shape[0] == 1:
+        ref = list(best_score['sseqid'])[0]
+        cause = 'Min_80_is_best'
+    elif best_score.shape[0]:
+        ref = "Multiple_hits"
+        cause = 'Min_80_is_multiple'
+    else:
+        ref = "Best_HSP_score_ambiguous"
+        cause = 'Min_80_is_multiple'
+    return ref, cause
 
 
 def get_ref(params_pd):
     max_bitscore = params_pd['bitscore'].max()
     max_pident = params_pd['pident'].max()
     max_qcovs = params_pd['qcovs'].max()
-    # take the hits with best at both params
-    bests_pd = params_pd[
-        (params_pd['pident'] == max_pident) &
-        (params_pd['qcovs'] == max_qcovs)]
+    bests_pd = get_bests_pd(params_pd, max_pident, max_qcovs)
     # if more than one perfect hits
     if bests_pd.shape[0] > 1:
         ref = "Multiple_perfect_hits"
@@ -29,17 +55,8 @@ def get_ref(params_pd):
         cause = 'One_perfect_hit'
     else:
         if max_pident > 80:
-            bests_pd = params_pd[
-                (params_pd['pident'] == max_pident) |
-                (params_pd['qcovs'] == max_qcovs)]
-            best_score = bests_pd[
-                bests_pd['bitscore'] == max_bitscore]
-            if best_score.shape[0] == 1:
-                ref = list(best_score['sseqid'])[0]
-                cause = 'Min_80_is_best'
-            else:
-                ref = "Multiple_hits"
-                cause = 'Min_80_is_multiple'
+            ref, cause = get_ref_cause_over80(
+                params_pd, max_pident, max_qcovs, max_bitscore)
         else:
             ref = "Other"
             cause = 'Less_than_80'
@@ -75,8 +92,9 @@ def run_blasts(dada2, eval_dir, mocks, blast_dbs, blast_in, blast_out):
     """Perform the BLAST searches"""
     blast_ins_pds = []
     blast_outs_pds = []
-    for (fwd, rev), (tab, seq, _) in dada2.items():
-        seq_out = '%s/%s-%s_toblast.fa' % (eval_dir, fwd, rev)
+    for fr, (tab, seq, _) in dada2.items():
+        fwd, rev = get_fwd_rev(fr)
+        seq_out = '%s/%s_toblast.fa' % (eval_dir, '-'.join(map(str, fr)))
         mock_seqs_ids = write_seq_to_blast(seq_out, tab, seq, mocks)
         blast_ins_pds.append([fwd, rev, len(mock_seqs_ids)])
         for p, blast_db in blast_dbs.items():

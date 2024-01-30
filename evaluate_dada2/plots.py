@@ -34,6 +34,8 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
     """Make heatmaps for the DADA2 stats"""
     for value in ['passed filter', 'merged', 'non-chimeric']:
         name = 'percentage of input %s' % value
+        if name not in set(stats_pd.columns):
+            continue
         fig, axes = plt.subplots(1, 2, figsize=(11, 3))
         for control in [0, 1]:
             sams = list(meta[meta['is_control'] == control].sample_name)
@@ -131,8 +133,8 @@ def make_heatmap_classifs(outs, txts, pdf):
                         sorted(set([i.split(';')[-1].strip() for i in x])))
                 else:
                     func = lambda x: '\n'.join(
-                        [';'.join(i) if len(set(x)) < 5 else '>5 IDs'
-                         for i in np.array_split(sorted(set(x)), 4)])
+                        sorted(set([';'.join(i) if len(set(x)) < 5 else '>5 IDs'
+                         for i in np.array_split(sorted(set(x)), 4)])))
                 taxa_names = p_pd[['f', 'r', 'Taxon']].pivot_table(
                     index=['f'], columns=['r'], values=['Taxon'],
                     aggfunc=func)
