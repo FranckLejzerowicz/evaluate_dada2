@@ -36,9 +36,13 @@ def run_dada2(
         f_trim_lengths,
         r_trim_lengths,
         n_cores,
-        sample_regressions
+        sample_regressions,
+        trunc_q,
+        max_er,
+        max_er_rev
 ):
     mini, maxi, step = trim_range
+    params = [trunc_q, max_er, max_er_rev]
     forwards, reverses = get_fors_revs(mini, maxi, step, trim_lengths,
                                        f_trim_lengths, r_trim_lengths)
     combis_split = get_combis_split(forwards, reverses, n_cores)
@@ -77,9 +81,9 @@ def run_dada2(
         fastqs = get_fastqs(meta, trimmed_dir)
         print("Fastq files in", base_dir, "[%s samples detected]" % len(fastqs))
         manifest = get_trimmed_seqs(fastqs, denoized_dir, reverses)
-        trimmed_seqs = load_trimmed_seqs(manifest, reverses)
+        trimmed = load_trimmed_seqs(manifest, reverses)
         pool = multiprocessing.Pool(n_cores)
-        pool_params = [(x, trimmed_seqs, out_files) for x in combis_split]
+        pool_params = [(x, trimmed, out_files, params) for x in combis_split]
         pool.starmap(run_denoise, pool_params)
         pool.close()
         pool.join()

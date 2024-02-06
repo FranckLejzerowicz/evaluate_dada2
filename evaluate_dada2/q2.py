@@ -36,7 +36,7 @@ def run_evaluation(ref_q2, sam_q2, depth=1):
     return evaluation
 
 
-def run_denoise(combis, trimmed_seqs, out_files):
+def run_denoise(combis, trimmed_seqs, out_files, params):
     for for_rev in combis:
         tab_fp, seq_fp, sta_fp = out_files[tuple(for_rev)]
         if not (isfile(tab_fp) and isfile(seq_fp) and isfile(sta_fp)):
@@ -45,9 +45,9 @@ def run_denoise(combis, trimmed_seqs, out_files):
                     demultiplexed_seqs=trimmed_seqs,
                     trunc_len_f=for_rev[0],
                     trunc_len_r=for_rev[1],
-                    max_ee_f=2,
-                    max_ee_r=2,
-                    trunc_q=20,
+                    trunc_q=params[0],
+                    max_ee_f=params[1],
+                    max_ee_r=params[2],
                     chimera_method="consensus",
                     n_threads=1,
                     hashed_feature_ids=True
@@ -56,8 +56,8 @@ def run_denoise(combis, trimmed_seqs, out_files):
                 tab, seq, sta = denoise_single(
                     demultiplexed_seqs=trimmed_seqs,
                     trunc_len=for_rev[0],
-                    max_ee=2,
-                    trunc_q=20,
+                    trunc_q=params[0],
+                    max_ee=params[1],
                     chimera_method="consensus",
                     n_threads=1,
                     hashed_feature_ids=True

@@ -49,6 +49,15 @@ from evaluate_dada2.run_dada2 import run_dada2
     "--sample-regressions/--no-sample-regressions",
     default=False, show_default=True,
     help="Make regression for mock features in actual samples")
+@click.option(
+    "-q", "--p-trunc-quality", type=int, nargs=1, show_default=False,
+    default=20, help="Truncation quality score")
+@click.option(
+    "-e", "--p-max-error", type=int, nargs=1, show_default=False,
+    default=2, help="Max expected errors")
+@click.option(
+    "-er", "--p-max-error-reverse", type=int, nargs=1, show_default=False,
+    default=2, help="Max expected errors")
 @click.version_option(__version__, prog_name="evaluate_dada2")
 
 
@@ -64,7 +73,10 @@ def standalone_dada2(
         p_f_trim_lengths,
         p_r_trim_lengths,
         p_n_cores,
-        sample_regressions
+        sample_regressions,
+        p_trunc_quality,
+        p_max_error,
+        p_max_error_reverse
 ):
 
     run_dada2(
@@ -79,7 +91,10 @@ def standalone_dada2(
         f_trim_lengths=p_f_trim_lengths,
         r_trim_lengths=p_r_trim_lengths,
         n_cores=p_n_cores,
-        sample_regressions=sample_regressions
+        sample_regressions=sample_regressions,
+        trunc_q=p_trunc_quality,
+        max_er=p_max_error,
+        max_er_rev=p_max_error_reverse
     )
 
 
