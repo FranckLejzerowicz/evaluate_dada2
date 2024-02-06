@@ -69,7 +69,7 @@ def make_heatmap_blast_asv(blast_in_pd, pdf):
         values=['nqueries'])
     nqueries_pv.columns = nqueries_pv.columns.droplevel()
     fig, ax = plt.subplots(figsize=(4, 3))
-    g = sns.heatmap(nqueries_pv, cmap='RdBu', annot=True, ax=ax)
+    sns.heatmap(nqueries_pv, cmap='RdBu', annot=True, ax=ax)
     plt.suptitle('Number of ASVs in the trimmed mock sample',
                  fontsize=14, fontweight="bold")
     plt.subplots_adjust(top=0.82)

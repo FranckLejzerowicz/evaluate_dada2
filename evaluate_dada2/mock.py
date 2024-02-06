@@ -125,6 +125,7 @@ def get_mock_melt(mock_sams_pd, hits_pd, sams, f, r):
     ).unstack().T
     fr_us.index = fr_us.index.droplevel()
     fr_mock_pd = pd.concat([fr_us, mock_sams_pd], axis=1)
+    fr_mock_pd[sams] = fr_mock_pd[sams].fillna(0.)
     fr_mock_pd = fr_mock_pd.apply(lambda x: x.fillna(x.index.to_series()))
     mock_melt = fr_mock_pd.melt(
         id_vars=sams, value_name='ref', var_name='perc_ident'
