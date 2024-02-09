@@ -54,7 +54,7 @@ def define_dirs(base_dir):
     for subdir in ['asv', 'taxo']:
         to_create.append('%s/%s' % (eval_dir, subdir))
 
-    figure_dir = "%s/figures" % base_dir
+    figure_dir = "%s/figures" % eval_dir
     to_create.append(figure_dir)
     mk_dirs(to_create)
 
