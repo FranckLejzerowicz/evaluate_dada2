@@ -54,9 +54,10 @@ def run_dada2(
     print("That is %s combinations" % len([y for x in combis_split for y in x]))
 
     print("Metadata file:", metadata)
-    print("Mock community files in:", mock_ref_dir)
-    print("Mock community taxonomy:", ref_tax_file)
-    print("Metadata variables to check:", '; '.join(sorted(meta_cols)))
+    if mock_ref_dir:
+        print("Mock community files in:", mock_ref_dir)
+        print("Mock community taxonomy:", ref_tax_file)
+        print("Metadata variables to check:", '; '.join(sorted(meta_cols)))
 
     print("Getting output folders")
     trimmed_dir, denoized_dir, eval_dir, pdf_fp = define_dirs(base_dir)
@@ -71,9 +72,10 @@ def run_dada2(
         meta_cols = ['control_type'] + sorted(meta_cols)
 
     # mock things
-    print("Loading mock community reference(s)")
-    ref_seqs = get_ref_seqs(mock_ref_dir)
-    refs = get_refs(mock_ref_dir, ref_tax_file)
+    if mock_ref_dir:
+        print("Loading mock community reference(s)")
+        ref_seqs = get_ref_seqs(mock_ref_dir)
+        refs = get_refs(mock_ref_dir, ref_tax_file)
 
     # DADA2 things
     if to_do(out_files):
@@ -94,34 +96,36 @@ def run_dada2(
 
     print("Making heatmaps from DADA2 stat results")
     make_heatmap_outputs(meta, stats_pd, pdf)
-    if sample_regressions:
-        if not os.path.isfile(lmplot_fp):
-            print("Open-reference clustering on the mock references")
-            plots_pd = open_ref(dada2, ref_seqs, mocks, meta, meta_cols)
-            plots_pd.to_csv(lmplot_fp, index=False, sep='\t')
-        else:
-            plots_pd = pd.read_table(lmplot_fp)
-        print("Making regressions for relative abundances of samples/mock ASVs")
-        plot_regressions(plots_pd, pdf)
 
-    blast_in = '%s/blast_in.tsv' % eval_dir
-    blast_out = '%s/blast_out.tsv' % eval_dir
-    print("Loading reference mock into qiime2 and for BLASTn")
-    blast_dbs, mock_q2s = get_mock_refs(ref_seqs, refs, ranks)
-    if not (os.path.isfile(blast_in) and os.path.isfile(blast_out)):
-        print("Running BLASTn for ASVs vs mock references")
-        run_blasts(dada2, eval_dir, mocks, blast_dbs, blast_in, blast_out)
-    blast_out_pd = pd.read_table(blast_out)
-    blast_in_pd = pd.read_table(blast_in)
-    print("Making heatmap of the BLASTed ASVs numbers")
-    make_heatmap_blast_asv(blast_in_pd, pdf)
-    print("Parsing the BLASTn hits")
-    hits_pd = get_hits_pd(blast_out_pd)
-    print("Running Qiime2's evaluate-composition for samples' mocks features")
-    outs = get_outs(dada2, eval_dir, mocks, hits_pd, mock_q2s, refs, ranks)
-    print("Making heatmap from the Qiime2's evaluate-composition results")
-    txts = get_txts()
-    make_heatmap_classifs(outs, txts, pdf)
-    make_heatmap_stats(outs, txts, pdf)
-    pdf.close()
+    if mock_ref_dir:
+        if sample_regressions:
+            if not os.path.isfile(lmplot_fp):
+                print("Open-reference clustering on the mock references")
+                plots_pd = open_ref(dada2, ref_seqs, mocks, meta, meta_cols)
+                plots_pd.to_csv(lmplot_fp, index=False, sep='\t')
+            else:
+                plots_pd = pd.read_table(lmplot_fp)
+            print("Making regressions for relative abundances of samples/mock ASVs")
+            plot_regressions(plots_pd, pdf)
+
+        blast_in = '%s/blast_in.tsv' % eval_dir
+        blast_out = '%s/blast_out.tsv' % eval_dir
+        print("Loading reference mock into qiime2 and for BLASTn")
+        blast_dbs, mock_q2s = get_mock_refs(ref_seqs, refs, ranks)
+        if not (os.path.isfile(blast_in) and os.path.isfile(blast_out)):
+            print("Running BLASTn for ASVs vs mock references")
+            run_blasts(dada2, eval_dir, mocks, blast_dbs, blast_in, blast_out)
+        blast_out_pd = pd.read_table(blast_out)
+        blast_in_pd = pd.read_table(blast_in)
+        print("Making heatmap of the BLASTed ASVs numbers")
+        make_heatmap_blast_asv(blast_in_pd, pdf)
+        print("Parsing the BLASTn hits")
+        hits_pd = get_hits_pd(blast_out_pd)
+        print("Running Qiime2's evaluate-composition for samples' mocks features")
+        outs = get_outs(dada2, eval_dir, mocks, hits_pd, mock_q2s, refs, ranks)
+        print("Making heatmap from the Qiime2's evaluate-composition results")
+        txts = get_txts()
+        make_heatmap_classifs(outs, txts, pdf)
+        make_heatmap_stats(outs, txts, pdf)
+        pdf.close()
     print('--> Written:', pdf_fp)
