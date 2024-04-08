@@ -97,10 +97,13 @@ def get_metadata(metadata, mock_ref_dir):
 def get_fastqs(meta, trimmed_dir):
     fastqs = {}
     for sample_name in meta['sample_name']:
-        fastqs[sample_name] = glob.glob(
-            '%s/%s_*_R1_*.fastq.gz' % (trimmed_dir, sample_name)
-        ) + glob.glob(
-            '%s/%s_*_R2_*.fastq.gz' % (trimmed_dir, sample_name))
+        r1s = glob.glob('%s/%s_*_R1*.fastq.gz' % (trimmed_dir, sample_name))
+        if not r1s:
+            r1s = glob.glob('%s/%s_*_R1*.fastq' % (trimmed_dir, sample_name))
+        r2s = glob.glob('%s/%s_*_R2*.fastq.gz' % (trimmed_dir, sample_name))
+        if not r2s:
+            r2s = glob.glob('%s/%s_*_R2*.fastq' % (trimmed_dir, sample_name))
+        fastqs[sample_name] = r1s + r2s
     return fastqs
 
 
