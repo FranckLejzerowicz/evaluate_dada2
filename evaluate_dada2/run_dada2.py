@@ -67,7 +67,7 @@ def run_dada2(
 
     # metadata things
     print("Loading metadata")
-    meta, mocks = get_metadata(metadata)
+    meta, mocks = get_metadata(metadata, mock_ref_dir)
     if 'control_type' not in meta_cols:
         meta_cols = ['control_type'] + sorted(meta_cols)
 

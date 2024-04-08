@@ -84,10 +84,13 @@ def get_out_files(combis_split, denoized_dir):
     return out_files
 
 
-def get_metadata(metadata):
+def get_metadata(metadata, mock_ref_dir):
     meta = pd.read_table(metadata)
-    mock_sams = list(
-        meta[meta['control_type'] == 'control positive'].sample_name)
+    if not mock_ref_dir or 'control_type' not in meta.columns:
+        mock_sams = []
+    else:
+        mock_sams = list(
+            meta[meta['control_type'] == 'control positive'].sample_name)
     return meta, mock_sams
 
 
