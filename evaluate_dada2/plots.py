@@ -38,10 +38,10 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
             continue
         if 'is_control' not in meta or meta['is_control'].nunique() == 1:
             controls = [0]
-            fig, axes = plt.subplots(1, 1, figsize=(5, 3))
+            fig, axes = plt.subplots(1, 1, squeeze=False, figsize=(5, 3))
         else:
             controls = [0, 1]
-            fig, axes = plt.subplots(1, 2, figsize=(11, 3))
+            fig, axes = plt.subplots(1, 2, squeeze=False, figsize=(11, 3))
         for control in controls:
             if len(controls) == 2:
                 sams = list(meta[meta['is_control'] == control].sample_name)
