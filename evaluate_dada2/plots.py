@@ -36,9 +36,17 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
         name = 'percentage of input %s' % value
         if name not in set(stats_pd.columns):
             continue
-        fig, axes = plt.subplots(1, 2, figsize=(11, 3))
-        for control in [0, 1]:
-            sams = list(meta[meta['is_control'] == control].sample_name)
+        if 'is_control' not in meta or meta['is_control'].nunique() == 1:
+            controls = [0]
+            fig, axes = plt.subplots(1, 1, figsize=(5, 3))
+        else:
+            controls = [0, 1]
+            fig, axes = plt.subplots(1, 2, figsize=(11, 3))
+        for control in controls:
+            if len(controls) == 2:
+                sams = list(meta[meta['is_control'] == control].sample_name)
+            else:
+                sams = list(meta.sample_name)
             cur_stats_pd = stats_pd[stats_pd['sample-id'].isin(sams)]
             stats_mean = cur_stats_pd.pivot_table(
                 index=['forward'], columns=['reverse'],
@@ -54,7 +62,10 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
                 stats_mean, cmap='RdBu',
                 annot=stats_full.values,
                 ax=axes[control], fmt='')
-            g.set_title('is control==%s (n=%s)' % (control, len(sams)))
+            if len(controls) == 2:
+                g.set_title('control samples==%s (n=%s)' % (control, len(sams)))
+            else:
+                g.set_title('samples (n=%s)' % len(sams))
         plt.suptitle(name, fontsize=14, fontweight="bold")
         plt.subplots_adjust(top=0.82)
         pdf.savefig(bbox_inches='tight')
