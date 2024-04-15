@@ -38,7 +38,7 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
             continue
         if 'is_control' not in meta or meta['is_control'].nunique() == 1:
             controls = [0]
-            fig, axes = plt.subplots(1, 1, squeeze=False, figsize=(5, 3))
+            fig, axes = plt.subplots(figsize=(5, 3))
         else:
             controls = [0, 1]
             fig, axes = plt.subplots(1, 2, squeeze=False, figsize=(11, 3))
@@ -58,13 +58,17 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
                 stats_mean, 2).astype(str) + "\n(±" + round(
                 stats_sd, 2).astype(str) + ")"
             stats_mean.columns = stats_mean.columns.droplevel()
-            g = sns.heatmap(
-                stats_mean, cmap='RdBu',
-                annot=stats_full.values,
-                ax=axes[control], fmt='')
             if len(controls) == 2:
+                g = sns.heatmap(
+                    stats_mean, cmap='RdBu',
+                    annot=stats_full.values,
+                    ax=axes[control], fmt='')
                 g.set_title('control samples==%s (n=%s)' % (control, len(sams)))
             else:
+                g = sns.heatmap(
+                    stats_mean, cmap='RdBu',
+                    annot=stats_full.values,
+                    ax=axes, fmt='')
                 g.set_title('samples (n=%s)' % len(sams))
         plt.suptitle(name, fontsize=14, fontweight="bold")
         plt.subplots_adjust(top=0.82)
