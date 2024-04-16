@@ -60,13 +60,13 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
             stats_mean.columns = stats_mean.columns.droplevel()
             if len(controls) == 2:
                 g = sns.heatmap(
-                    stats_mean, cmap='RdBu', annot=stats_full.values, fmt='')
+                    stats_mean, cmap='RdBu',
+                    annot=stats_full.values,
+                    ax=axes[control], fmt='')
                 g.set_title('control samples==%s (n=%s)' % (control, len(sams)))
             else:
                 g = sns.heatmap(
-                    stats_mean, cmap='RdBu',
-                    annot=stats_full.values,
-                    ax=axes, fmt='')
+                    stats_mean, cmap='RdBu', annot=stats_full.values, fmt='')
                 g.set_title('samples (n=%s)' % len(sams))
         plt.suptitle(name, fontsize=14, fontweight="bold")
         plt.subplots_adjust(top=0.82)
