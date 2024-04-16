@@ -127,5 +127,5 @@ def run_dada2(
         txts = get_txts()
         make_heatmap_classifs(outs, txts, pdf)
         make_heatmap_stats(outs, txts, pdf)
-        pdf.close()
+    pdf.close()
     print('--> Written:', pdf_fp)
