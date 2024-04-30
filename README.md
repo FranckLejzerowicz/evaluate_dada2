@@ -36,6 +36,12 @@ Options:
   -lr, --p-r-trim-lengths INTEGER
                                   Trimming lengths (reverse reads)
   -n, --p-n-cores INTEGER         Number of cores for multiprocessing
+  --sample-regressions / --no-sample-regressions
+                                  Make regression for mock features in actual
+                                  samples  [default: no-sample-regressions]
+  -q, --p-trunc-quality INTEGER   Truncation quality score
+  -e, --p-max-error INTEGER       Max expected errors
+  -er, --p-max-error-reverse INTEGER
   --version                       Show the version and exit.
   --help                          Show this message and exit.
 ```
