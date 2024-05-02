@@ -57,7 +57,7 @@ from evaluate_dada2.run_dada2 import run_dada2
     default=2, help="Max expected errors")
 @click.option(
     "-er", "--p-max-error-reverse", type=int, nargs=1, show_default=False,
-    default=2, help="Max expected errors")
+    default=2, help="Max expected errors (reverse reads)")
 @click.version_option(__version__, prog_name="evaluate_dada2")
 
 
