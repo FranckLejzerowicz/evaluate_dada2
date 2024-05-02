@@ -115,7 +115,9 @@ def get_trimmed_seqs(fastqs, denoized_dir, reverses):
         h = 'sample-id\tabsolute-filepath\n'
     with open(manifest, 'w') as o:
         o.write(h)
+        print(' ---------- fastqs -----------')
         print(fastqs)
+        print(' ---------- fastqs -----------')
         for sample_name, rs in sorted(fastqs.items()):
             if reverses and len(rs) != 2:
                 continue
