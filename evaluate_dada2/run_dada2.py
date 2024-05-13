@@ -77,11 +77,12 @@ def run_dada2(
         ref_seqs = get_ref_seqs(mock_ref_dir)
         refs = get_refs(mock_ref_dir, ref_tax_file)
 
+    fastqs = get_fastqs(meta, trimmed_dir)
+    print("Fastq files in", base_dir, "[%s samples detected]" % len(fastqs))
+
     # DADA2 things
     if to_do(out_files):
         print("Running DADA2")
-        fastqs = get_fastqs(meta, trimmed_dir)
-        print("Fastq files in", base_dir, "[%s samples detected]" % len(fastqs))
         manifest = get_trimmed_seqs(fastqs, denoized_dir, reverses)
         trimmed = load_trimmed_seqs(manifest, reverses)
         pool = multiprocessing.Pool(n_cores)

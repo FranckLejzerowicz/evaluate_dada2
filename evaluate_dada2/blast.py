@@ -68,8 +68,8 @@ def makeblastdb(blast_db):
     spawn_subprocess(cmd)
 
 
-def write_seq_to_blast(seq_out, tab, seq, mocks):
-    mock_tab = tab.view(pd.DataFrame).T[mocks]
+def write_seq_to_blast(seq_out, mock_tab, seq, mocks):
+    mock_tab = mock_tab[mocks]
     mock_seqs_ids = mock_tab[mock_tab[mocks].sum(1) > 0].index
     mock_seqs = seq.view(Metadata).to_dataframe().loc[mock_seqs_ids]
     with open(seq_out, "w") as o:
@@ -94,8 +94,11 @@ def run_blasts(dada2, eval_dir, mocks, blast_dbs, blast_in, blast_out):
     blast_outs_pds = []
     for fr, (tab, seq, _) in dada2.items():
         fwd, rev = get_fwd_rev(fr)
+        mock_tab = tab.view(pd.DataFrame).T
+        if set(mocks).difference(set(mock_tab.columns)):
+            continue
         seq_out = '%s/%s_toblast.fa' % (eval_dir, '-'.join(map(str, fr)))
-        mock_seqs_ids = write_seq_to_blast(seq_out, tab, seq, mocks)
+        mock_seqs_ids = write_seq_to_blast(seq_out, mock_tab, seq, mocks)
         blast_ins_pds.append([fwd, rev, len(mock_seqs_ids)])
         for p, blast_db in blast_dbs.items():
             blast_out_pd = blastn(seq_out, blast_db)

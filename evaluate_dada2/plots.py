@@ -41,7 +41,7 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
             fig, axes = plt.subplots(figsize=(5, 3))
         else:
             controls = [0, 1]
-            fig, axes = plt.subplots(1, 2, squeeze=False, figsize=(11, 3))
+            fig, axes = plt.subplots(1, 2, figsize=(11, 3))
         for control in controls:
             if len(controls) == 2:
                 sams = list(meta[meta['is_control'] == control].sample_name)
@@ -59,10 +59,9 @@ def make_heatmap_outputs(meta, stats_pd, pdf):
                 stats_sd, 2).astype(str) + ")"
             stats_mean.columns = stats_mean.columns.droplevel()
             if len(controls) == 2:
-                g = sns.heatmap(
-                    stats_mean, cmap='RdBu',
-                    annot=stats_full.values,
-                    ax=axes[control], fmt='')
+                g = sns.heatmap(stats_mean, cmap='RdBu', ax=axes[control],
+                                annot=stats_full.values, fmt='',
+                                annot_kws={"fontsize": 8})
                 g.set_title('control samples==%s (n=%s)' % (control, len(sams)))
             else:
                 g = sns.heatmap(

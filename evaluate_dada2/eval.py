@@ -53,8 +53,11 @@ def get_outs(dada2, eval_dir, mocks, hits_pd, mock_q2s, refs, ranks):
     out = {'false_neg': [], 'misclass': [], 'underclass': [], 'results': []}
     for fdx, (fr, (tab, _, __)) in enumerate(dada2.items()):
         f, r = get_fwd_rev(fr)
+        mock_pd = tab.view(pd.DataFrame).T
+        if set(mocks).difference(set(mock_pd.columns)):
+            continue
+        mock_pd = mock_pd[sorted(mocks)]
         print('[%s/%s] for: %s - rev: %s' % (fdx + 1, len(dada2), f, r))
-        mock_pd = tab.view(pd.DataFrame).T[sorted(mocks)]
         mock_melt = get_mock_melt(mock_pd, hits_pd, list(mocks), f, r)
         for m in mocks:
             gb_col = ['perc_ident', 'ref', m]
