@@ -53,11 +53,11 @@ from evaluate_dada2.run_dada2 import run_dada2
     "-q", "--p-trunc-quality", type=int, nargs=1, show_default=False,
     default=20, help="Truncation quality score")
 @click.option(
-    "-e", "--p-max-error", type=int, nargs=1, show_default=False,
-    default=2, help="Max expected errors")
+    "-e", "--p-max-error", type=float, nargs=1, show_default=False,
+    default=2.0, help="Max expected errors")
 @click.option(
-    "-er", "--p-max-error-reverse", type=int, nargs=1, show_default=False,
-    default=2, help="Max expected errors (reverse reads)")
+    "-er", "--p-max-error-reverse", type=float, nargs=1, show_default=False,
+    default=2.0, help="Max expected errors (reverse reads)")
 @click.version_option(__version__, prog_name="evaluate_dada2")
 
 
