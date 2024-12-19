@@ -48,6 +48,7 @@ def run_denoise(combis, trimmed_seqs, out_files, params):
                     trunc_q=params[0],
                     max_ee_f=params[1],
                     max_ee_r=params[2],
+                    n_reads_learn=params[3],
                     chimera_method="consensus",
                     n_threads=1,
                     hashed_feature_ids=True
@@ -58,6 +59,7 @@ def run_denoise(combis, trimmed_seqs, out_files, params):
                     trunc_len=for_rev[0],
                     trunc_q=params[0],
                     max_ee=params[1],
+                    n_reads_learn=params[3],
                     chimera_method="consensus",
                     n_threads=1,
                     hashed_feature_ids=True

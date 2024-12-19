@@ -58,6 +58,9 @@ from evaluate_dada2.run_dada2 import run_dada2
 @click.option(
     "-er", "--p-max-error-reverse", type=float, nargs=1, show_default=False,
     default=2.0, help="Max expected errors (reverse reads)")
+@click.option(
+    "-nr", "--p-n-reads-learn", type=float, nargs=1, show_default=False,
+    default=1000000, help="Number of reads to use for error model training.")
 @click.version_option(__version__, prog_name="evaluate_dada2")
 
 
@@ -76,7 +79,8 @@ def standalone_dada2(
         sample_regressions,
         p_trunc_quality,
         p_max_error,
-        p_max_error_reverse
+        p_max_error_reverse,
+        p_n_reads_learn
 ):
 
     run_dada2(
@@ -94,7 +98,8 @@ def standalone_dada2(
         sample_regressions=sample_regressions,
         trunc_q=p_trunc_quality,
         max_er=p_max_error,
-        max_er_rev=p_max_error_reverse
+        max_er_rev=p_max_error_reverse,
+        n_reads_learn=p_n_reads_learn,
     )
 
 

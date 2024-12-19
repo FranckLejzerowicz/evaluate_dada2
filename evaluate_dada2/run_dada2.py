@@ -39,10 +39,11 @@ def run_dada2(
         sample_regressions,
         trunc_q,
         max_er,
-        max_er_rev
+        max_er_rev,
+        n_reads_learn
 ):
     mini, maxi, step = trim_range
-    params = [trunc_q, max_er, max_er_rev]
+    params = [trunc_q, max_er, max_er_rev, n_reads_learn]
     forwards, reverses = get_fors_revs(mini, maxi, step, trim_lengths,
                                        f_trim_lengths, r_trim_lengths)
     combis_split = get_combis_split(forwards, reverses, n_cores)
